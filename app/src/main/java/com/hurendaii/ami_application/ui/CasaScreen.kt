@@ -1,17 +1,13 @@
 package com.hurendaii.ami_application.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.hurendaii.ami_application.R
@@ -53,7 +49,7 @@ fun CasaScreen(
             // 🟩 CHARACTER DISPLAY
             Box(
                 modifier = Modifier
-                    .fillMaxHeight(0.6f) // 60% of screen height
+                    .fillMaxHeight(0.6f)
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
@@ -83,11 +79,22 @@ fun CasaScreen(
             }
         }
 
-        // 💰 CURRENCY METER - aligned to top end, under Health
+        // 🟨 MIDDLE RIGHT FEED BUTTON
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            Button(onClick = { onNavigate(Screen.Feed.createRoute(friendName)) }) {
+                Text("Feed")
+            }
+        }
+
+        // 💰 CURRENCY METER
         Column(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(top = 64.dp, end = 8.dp) // adjust as needed
+                .padding(top = 64.dp, end = 8.dp)
         ) {
             Text("Currency 1: 0", style = MaterialTheme.typography.bodySmall)
             Text("Currency 2: 0", style = MaterialTheme.typography.bodySmall)

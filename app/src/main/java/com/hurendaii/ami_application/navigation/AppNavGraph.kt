@@ -5,7 +5,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.hurendaii.ami_application.ui.*
+
 
 sealed class Screen(val route: String) {
     object Main : Screen("main_screen")
@@ -23,7 +26,6 @@ sealed class Screen(val route: String) {
     object Casa : Screen("casa_screen/{friendName}") {
         fun createRoute(friendName: String) = "casa_screen/$friendName"
     }
-
     object Shop : Screen("shop_screen/{friendName}") {
         fun createRoute(friendName: String) = "shop_screen/$friendName"
     }
@@ -41,6 +43,15 @@ sealed class Screen(val route: String) {
     }
     object Settings : Screen("settings_screen/{friendName}") {
         fun createRoute(friendName: String) = "settings_screen/$friendName"
+    }
+    object Tasks : Screen("tasks_screen/{friendName}") {
+        fun createRoute(friendName: String) = "tasks_screen/$friendName"
+    }
+    object AMI : Screen("ami_screen/{friendName}") {
+        fun createRoute(friendName: String) = "ami_screen/$friendName"
+    }
+    object Feed : Screen("feed_screen/{friendName}") {
+        fun createRoute(friendName: String) = "feed_screen/$friendName"
     }
 }
 
@@ -60,7 +71,7 @@ fun AppNavGraph(
 
         composable(Screen.Username.route) {
             UsernameInputScreen { userName ->
-            navController.navigate(Screen.UsernameGreet.createRoute(userName))
+                navController.navigate(Screen.UsernameGreet.createRoute(userName))
             }
         }
 
@@ -91,18 +102,46 @@ fun AppNavGraph(
             }
         }
 
-        // All blank screens with return to casa
+        composable(Screen.Health.route) { backStackEntry ->
+            val friendName = backStackEntry.arguments?.getString("friendName") ?: "Friend"
+            HealthScreen(
+                friendName = friendName,
+                onTasksClick = {
+                    navController.navigate(Screen.Tasks.createRoute(friendName))
+                },
+                onMyAmiClick = {
+                    navController.navigate(Screen.AMI.createRoute(friendName))  // <--- Add this
+                },
+                onReturnToCasa = {
+                    navController.navigate(Screen.Casa.createRoute(friendName)) {
+                        popUpTo(Screen.Casa.route) { inclusive = false }
+                    }
+                }
+            )
+        }
+
+        composable(
+            route = Screen.Tasks.route,
+            arguments = listOf(navArgument("friendName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val friendName = backStackEntry.arguments?.getString("friendName") ?: "Friend"
+            TasksScreen(friendName = friendName) {
+                navController.navigate(Screen.Health.createRoute(friendName)) {
+                    popUpTo(Screen.Health.route) { inclusive = false }
+                }
+            }
+        }
+
         listOf(
             Screen.Shop,
             Screen.Profile,
-            Screen.Health,
             Screen.Games,
             Screen.Settings
         ).forEach { screen ->
             composable(screen.route) { backStackEntry ->
                 val friendName = backStackEntry.arguments?.getString("friendName") ?: "Friend"
                 BlankScreen(
-                    title = screen.route.substringBefore("_screen").capitalize(),
+                    title = screen.route.substringBefore("_screen").replaceFirstChar { it.uppercase() },
                     onReturnToCasa = {
                         navController.navigate(Screen.Casa.createRoute(friendName)) {
                             popUpTo(Screen.Casa.route) { inclusive = false }
@@ -116,7 +155,7 @@ fun AppNavGraph(
             val friendName = backStackEntry.arguments?.getString("friendName") ?: "Unknown"
             FriendChosenScreen(friendName, navController)
         }
-        
+
         composable(Screen.Track.route) { backStackEntry ->
             val friendName = backStackEntry.arguments?.getString("friendName") ?: "Friend"
             TrackScreen(friendName = friendName) {
@@ -125,5 +164,32 @@ fun AppNavGraph(
                 }
             }
         }
+
+        composable(
+            route = Screen.AMI.route,
+            arguments = listOf(navArgument("friendName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val friendName = backStackEntry.arguments?.getString("friendName") ?: "Friend"
+            AMIScreen(
+                friendName = friendName,  // <--- Pass friendName here
+                onBack = {
+                    navController.navigate(Screen.Health.createRoute(friendName)) {
+                        popUpTo(Screen.Health.route) { inclusive = false }
+                    }
+                }
+            )
+        }
+        composable(
+            route = Screen.Feed.route,
+            arguments = listOf(navArgument("friendName") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val friendName = backStackEntry.arguments?.getString("friendName") ?: "Friend"
+            FeedScreen(friendName = friendName) {
+                navController.navigate(Screen.Casa.createRoute(friendName)) {
+                    popUpTo(Screen.Casa.route) { inclusive = false }
+                }
+            }
+        }
+
     }
 }

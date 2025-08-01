@@ -8,9 +8,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.runtime.*
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
 
@@ -37,4 +34,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+
+    // ❗TEST FUNCTION — Simulate step increments
+    fun incrementStepsManually() {
+        _steps.value += 1
+    }
 }

@@ -18,7 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun TrackScreen(
-    friendName: String, // ✅ Added to match the navigation call
+    friendName: String,
     viewModel: StepCounterViewModel = viewModel(),
     onReturnToCasa: () -> Unit
 ) {
@@ -47,6 +47,11 @@ fun TrackScreen(
         Button(onClick = onReturnToCasa) {
             Text("Return to Casa")
         }
+
+        // ❗TEST BUTTON — For emulator use only, delete before production
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = { viewModel.incrementStepsManually() }) {
+            Text("❗TEST BUTTON: Add Step")
+        }
     }
 }
-    

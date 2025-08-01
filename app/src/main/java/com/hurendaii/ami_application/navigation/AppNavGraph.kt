@@ -8,6 +8,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.hurendaii.ami_application.ui.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 
 
 sealed class Screen(val route: String) {
@@ -58,7 +60,8 @@ sealed class Screen(val route: String) {
 @Composable
 fun AppNavGraph(
     navController: NavHostController = rememberNavController()
-) {
+) { 
+    val amiViewModel: AmiViewModel = viewModel()
     NavHost(
         navController = navController,
         startDestination = Screen.Main.route
@@ -90,16 +93,23 @@ fun AppNavGraph(
 
         composable(Screen.Setup.route) { backStackEntry ->
             val friendName = backStackEntry.arguments?.getString("friendName") ?: "Friend"
-            SetupScreen(friendName) {
-                navController.navigate(Screen.Casa.createRoute(it))
-            }
+            SetupScreen(
+                amiViewModel = amiViewModel,
+                currentFriendName = friendName,
+                onNameSubmitted = {
+                    val updatedName = amiViewModel.amiModel.name
+                    navController.navigate(Screen.Casa.createRoute(updatedName))
+                }
+            )
         }
 
         composable(Screen.Casa.route) { backStackEntry ->
             val friendName = backStackEntry.arguments?.getString("friendName") ?: "Friend"
-            CasaScreen(friendName = friendName) { route ->
-                navController.navigate(route)
-            }
+            CasaScreen(
+                amiViewModel = amiViewModel,
+                friendName = friendName,
+                onNavigate = { route -> navController.navigate(route) }
+            )
         }
 
         composable(Screen.Health.route) { backStackEntry ->

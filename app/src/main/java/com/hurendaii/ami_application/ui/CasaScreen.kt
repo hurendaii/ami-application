@@ -12,17 +12,73 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.hurendaii.ami_application.R
 import com.hurendaii.ami_application.navigation.Screen
+import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.*
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import com.hurendaii.ami_application.util.Logger
+import androidx.compose.runtime.LaunchedEffect
+
 
 @Composable
 fun CasaScreen(
+    amiViewModel: AmiViewModel,
     friendName: String,
     onNavigate: (String) -> Unit
 ) {
+    LaunchedEffect(amiViewModel.amiModel.name) {
+        Logger.d("CasaScreen AmiModel name = ${amiViewModel.amiModel.name}")
+    }
+
+
+    val amiModel by remember { derivedStateOf { amiViewModel.amiModel } }
+
+    // Use amiModel.name for display, reactive to changes
+    Text("Welcome to Casa, ${amiModel.name}!")
+
+    val successMessage = amiViewModel.successMessage
+    val timeFormatter = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
+    val digitalFont = FontFamily(Font(R.font.ds_digital, FontWeight.Normal))
+    var currentTime by remember { mutableStateOf(timeFormatter.format(Date())) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            currentTime = timeFormatter.format(Date())
+            delay(1_000L)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // 🟦 TOP MESSAGE BAR (NEW)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+        ) {
+            // Show the success message if present
+            if (successMessage.isNotBlank()) {
+                Text(
+                    text = successMessage,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                // Clear after 2 seconds
+                LaunchedEffect(successMessage) {
+                    delay(2000)
+                    amiViewModel.clearSuccessMessage()
+                }
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize(),
@@ -33,11 +89,22 @@ fun CasaScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(onClick = { onNavigate(Screen.Shop.createRoute(friendName)) }) {
-                    Text("Shop")
+                Column(horizontalAlignment = Alignment.Start) {
+                    Button(onClick = { onNavigate(Screen.Shop.createRoute(friendName)) }) {
+                        Text("Shop")
+                    }
+                    Text(
+                        text = currentTime,
+                        fontFamily = digitalFont,
+                        fontSize = MaterialTheme.typography.headlineMedium.fontSize,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
+
                 Button(onClick = { onNavigate(Screen.Profile.createRoute(friendName)) }) {
                     Text("Profile")
                 }
@@ -85,7 +152,12 @@ fun CasaScreen(
                 .fillMaxSize(),
             contentAlignment = Alignment.CenterEnd
         ) {
-            Button(onClick = { onNavigate(Screen.Feed.createRoute(friendName)) }) {
+            Button(
+                onClick = {
+                    // Feed action via ViewModel (shows success message!)
+                    amiViewModel.feed()
+                }
+            ) {
                 Text("Feed")
             }
         }
@@ -101,3 +173,4 @@ fun CasaScreen(
         }
     }
 }
+

@@ -7,13 +7,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import com.hurendaii.ami_application.util.Logger
 
 @Composable
 fun SetupScreen(
+    amiViewModel: AmiViewModel,
     currentFriendName: String,
-    onNameSubmitted: (String) -> Unit
+    onNameSubmitted: () -> Unit
 ) {
     var newFriendName by remember { mutableStateOf(currentFriendName) }
+    val successMessage = amiViewModel.successMessage
 
     Column(
         modifier = Modifier
@@ -41,7 +44,10 @@ fun SetupScreen(
         Button(
             onClick = {
                 if (newFriendName.isNotBlank()) {
-                    onNameSubmitted(newFriendName)
+                    amiViewModel.setName(newFriendName)
+                    Logger.d("SetupScreen submit name = $newFriendName")
+                    Logger.d("AmiViewModel name after setName: ${amiViewModel.amiModel.name}")
+                    onNameSubmitted()
                 }
             },
             enabled = newFriendName.isNotBlank(),
@@ -49,5 +55,20 @@ fun SetupScreen(
         ) {
             Text("Submit")
         }
+
+        if (successMessage.isNotBlank()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = successMessage,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
+            // Optional: Automatically clear the message after 2 seconds
+            LaunchedEffect(successMessage) {
+                kotlinx.coroutines.delay(2000)
+                amiViewModel.clearSuccessMessage()
+            }
+        }
     }
 }
+
